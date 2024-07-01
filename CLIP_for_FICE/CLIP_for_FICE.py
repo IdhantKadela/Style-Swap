@@ -4,14 +4,16 @@ import torchvision.transforms as TF
 import numpy as np
 import clip
 
-model, preprocess = clip.load('ViT-B/32')
+clip_model, preprocess = clip.load('RN50')
+clip_model.eval()
+
 def CLIP_encode_text(text_list:list) -> torch.Tensor:
     # Encodes given list of tokens and return the text embeddings in the shape of (batch_size, 512)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     txt_tokens = clip.tokenize(text_list).to(device)
-    txt_features = model.encode_text(txt_tokens).float()
-    txt_features /= txt_features.norm(dim=-1, keepdim=True)
-    return txt_features
+    txt_features = clip_model.encode_text(txt_tokens).float()
+    txt_features_ = txt_features/txt_features.norm(dim=-1, keepdim=True)
+    return txt_features_
 
 def CLIP_encode_image(image_list, raw_image:bool=False):
     # Encodes given list of images (or tensor) and return the image embeddings in the shape of (batch_size, 512)
@@ -30,9 +32,9 @@ def CLIP_encode_image(image_list, raw_image:bool=False):
         ])
         img_input = transform(image_list).to(device)
         # img_input = image_list.to(device)
-    img_features = model.encode_image(img_input).float()
-    img_features /= img_features.norm(dim=-1, keepdim=True)
-    return img_features
+    img_features = clip_model.encode_image(img_input).float()
+    img_features_ = img_features/img_features.norm(dim=-1, keepdim=True)
+    return img_features_
 
 def CLIP_loss(text_list, image_list, raw_image:bool=False):
     txt_embed = CLIP_encode_text(text_list)
