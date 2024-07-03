@@ -39,5 +39,6 @@ def CLIP_encode_image(image_list, raw_image:bool=False):
 def CLIP_loss(text_list, image_list, raw_image:bool=False):
     txt_embed = CLIP_encode_text(text_list)
     img_embed = CLIP_encode_image(image_list, raw_image)
-    similarity = img_embed @ txt_embed.T
-    return (1 - similarity).sum()
+    similarity = torch.mul(txt_embed, img_embed).sum(dim=-1)
+    print(similarity)
+    return (1 - similarity).mean()
